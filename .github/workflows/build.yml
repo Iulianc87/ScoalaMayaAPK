@@ -10,7 +10,6 @@ jobs:
     env:
       ANDROID_HOME: /usr/local/lib/android/sdk
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-      ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/25.2.9519653
 
     steps:
       - name: Checkout
@@ -42,8 +41,15 @@ jobs:
           pip install buildozer==1.5.0
           pip install python-for-android==2024.01.21
 
+      - name: Setup Android SDK PATH
+        run: |
+          echo "/usr/local/lib/android/sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
+
       - name: Install Android SDK packages
         run: |
+          export PATH=$PATH:/usr/local/lib/android/sdk/cmdline-tools/latest/bin
+
           yes | sdkmanager --licenses
 
           sdkmanager \
@@ -51,9 +57,6 @@ jobs:
             "platforms;android-34" \
             "build-tools;34.0.0" \
             "ndk;25.2.9519653"
-
-          ls /usr/local/lib/android/sdk/build-tools
-          ls /usr/local/lib/android/sdk/build-tools/34.0.0
 
       - name: Build APK
         run: |
@@ -74,7 +77,6 @@ jobs:
           echo "android.sdk = 34" >> buildozer.spec
           echo "android.ndk = 25b" >> buildozer.spec
           echo "android.accept_sdk_license = True" >> buildozer.spec
-          echo "p4a.branch = master" >> buildozer.spec
 
           echo "android.sdk_path = /usr/local/lib/android/sdk" >> buildozer.spec
           echo "android.ndk_path = /usr/local/lib/android/sdk/ndk/25.2.9519653" >> buildozer.spec
