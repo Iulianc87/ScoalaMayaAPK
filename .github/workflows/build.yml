@@ -64,6 +64,9 @@ jobs:
           echo "" >> buildozer.spec
           echo "android.api = 33" >> buildozer.spec
           echo "android.minapi = 24" >> buildozer.spec
+          echo "android.sdk = 34" >> buildozer.spec
+          echo "android.build_tools_version = 34.0.0" >> buildozer.spec
+          echo "android.skip_update = True" >> buildozer.spec
           echo "android.accept_sdk_license = True" >> buildozer.spec
           echo "android.archs = armeabi-v7a" >> buildozer.spec
 
