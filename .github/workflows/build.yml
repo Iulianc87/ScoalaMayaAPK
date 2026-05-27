@@ -18,7 +18,12 @@ jobs:
           pip install --upgrade pip
           pip install cython==0.29.36
           pip install buildozer==1.5.0
-          pip install python-for-android
+      - name: Accept Android Licenses
+        run: |
+          # Aceasta este partea critică care lipsea
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
+          yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses || true
       - name: Build
         run: buildozer android debug
       - name: Upload
