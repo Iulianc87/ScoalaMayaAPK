@@ -29,7 +29,6 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-
           sudo apt install -y \
             git zip unzip autoconf libtool pkg-config \
             zlib1g-dev libncurses5-dev libncursesw5-dev \
@@ -48,10 +47,7 @@ jobs:
 
       - name: Install Android SDK packages
         run: |
-          export PATH=$PATH:/usr/local/lib/android/sdk/cmdline-tools/latest/bin
-
           yes | sdkmanager --licenses
-
           sdkmanager \
             "platform-tools" \
             "platforms;android-34" \
@@ -60,30 +56,11 @@ jobs:
 
       - name: Build APK
         run: |
-          cd Proiect
-
-          
-          sed -i 's/title = My Application/title = ScoalaMaya/' buildozer.spec
-          sed -i 's/package.name = myapp/package.name = scoalamaya/' buildozer.spec
-          sed -i 's/package.domain = org.test/package.domain = org.scoala/' buildozer.spec
-
-          sed -i 's/source.include_exts = py,png,jpg,kv,atlas/source.include_exts = py,png,jpg,kv,atlas,ttf/' buildozer.spec
-
-          sed -i 's/requirements = python3,kivy/requirements = python3==3.11.6,kivy==2.2.1/' buildozer.spec
-
-          echo "android.api = 34" >> buildozer.spec
-          echo "android.minapi = 24" >> buildozer.spec
-          echo "android.sdk = 34" >> buildozer.spec
-          echo "android.ndk = 25b" >> buildozer.spec
-          echo "android.accept_sdk_license = True" >> buildozer.spec
-
-          echo "android.sdk_path = /usr/local/lib/android/sdk" >> buildozer.spec
-          echo "android.ndk_path = /usr/local/lib/android/sdk/ndk/25.2.9519653" >> buildozer.spec
-
+          # Construim direct, deoarece fisierul buildozer.spec este in root
           buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: apk
-          path: Proiect/bin/*.apk
+          name: scoala-maya-apk
+          path: bin/*.apk
