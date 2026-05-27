@@ -7,6 +7,10 @@ jobs:
   build:
     runs-on: ubuntu-22.04
 
+    env:
+      ANDROID_HOME: /home/runner/android-sdk
+      ANDROID_SDK_ROOT: /home/runner/android-sdk
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,8 +28,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get update -y
-
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
             git \
             zip \
@@ -52,30 +54,23 @@ jobs:
 
       - name: Install Android SDK
         run: |
-          mkdir -p $HOME/android-sdk/cmdline-tools
-          cd $HOME/android-sdk
+          mkdir -p $ANDROID_HOME/cmdline-tools
+          cd $ANDROID_HOME
 
           wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O sdk.zip
 
-          unzip sdk.zip
+          unzip -o sdk.zip
 
-          mkdir cmdline-tools-temp
-          mv cmdline-tools/* cmdline-tools-temp/
+          mkdir temp
+          mv cmdline-tools/* temp/
 
           mkdir -p cmdline-tools/latest
-          mv cmdline-tools-temp/* cmdline-tools/latest/
+          mv temp/* cmdline-tools/latest/
 
-          echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
 
-          echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
+          yes | sdkmanager --licenses
 
-      - name: Accept licenses
-        run: yes | sdkmanager --licenses
-
-      - name: Install SDK packages
-        run: |
           sdkmanager \
             "platform-tools" \
             "platforms;android-34" \
@@ -83,8 +78,7 @@ jobs:
 
       - name: Build APK
         run: |
-          export ANDROID_HOME=$HOME/android-sdk
-          export ANDROID_SDK_ROOT=$HOME/android-sdk
+          export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
 
           cd Proiect
 
@@ -94,7 +88,10 @@ jobs:
           sed -i 's/# android.minapi = 21/android.minapi = 24/' buildozer.spec
           sed -i 's/# android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
 
-          echo "android.sdk_path = $HOME/android-sdk" >> buildozer.spec
+          echo "android.sdk = 34" >> buildozer.spec
+          echo "android.sdk_path = /home/runner/android-sdk" >> buildozer.spec
+          echo "android.skip_update = True" >> buildozer.spec
+          echo "android.ndk = 25b" >> buildozer.spec
 
           buildozer android debug
 
