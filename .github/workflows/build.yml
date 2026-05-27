@@ -32,7 +32,7 @@ jobs:
             libffi-dev libssl-dev wget tar
 
           pip install --upgrade pip
-          pip install buildozer==1.5.0 cython==0.29.36 virtualenv
+          pip install buildozer==1.4.0 cython==0.29.36 virtualenv
 
       - name: Install Android SDK
         run: |
@@ -94,7 +94,7 @@ jobs:
           android.build_tools_version = 34.0.0
           android.accept_sdk_license = True
 
-          p4a.branch = stable
+          p4a.branch = master
 
           log_level = 2
           EOF
