@@ -6,25 +6,22 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      # Această variabilă indică Buildozer-ului să accepte automat licențele
-      BUILDER_ALLOW_SDK_ACCEPT: 1
     steps:
       - uses: actions/checkout@v4
       
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev cmake libffi-dev libssl-dev build-essential ccache
+          sudo apt install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev cmake libffi-dev libssl-dev build-essential ccache libsqlite3-dev
           pip install --upgrade pip
           pip install cython==0.29.36
           pip install buildozer==1.5.0
-          pip install setuptools
+          pip install --upgrade https://github.com/kivy/python-for-android/archive/master.zip
 
       - name: Build
         run: |
-          # Configurăm Buildozer să accepte licențele
-          echo "y" | buildozer android debug
+          # Se accepta licentele automat prin input-ul de mai jos
+          yes | buildozer android debug
         
       - name: Upload
         uses: actions/upload-artifact@v4
