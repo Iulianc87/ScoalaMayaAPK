@@ -8,22 +8,22 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: kivy/buildozer:latest
-      options: --user root
+      # Eliminăm 'options: --user root' pentru a rula ca user standard
     steps:
       - uses: actions/checkout@v4
       
       - name: Build
         run: |
-          # Dăm permisiuni de scriere/citire peste tot
-          chmod -R 777 .
+          # Dăm permisiuni pentru folderul de lucru
+          chown -R user:user .
           
           # Instalăm dependințele
           pip install --upgrade pip
-          pip install setuptools
           
-          # Rulăm buildozer
-          # -v înseamnă verbose (ne dă toate detaliile)
-          buildozer -v android debug
+          # Rulăm buildozer cu variabilele de mediu care ignoră avertismentul de root 
+          # și forțăm acceptarea prin 'yes'
+          export BUILDOZER_ALLOW_ROOT=1
+          yes y | buildozer -v android debug
         
       - name: Upload
         uses: actions/upload-artifact@v4
