@@ -8,9 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+      
       - name: Install dependencies
         run: |
           sudo apt update
@@ -18,14 +16,18 @@ jobs:
           pip install --upgrade pip
           pip install cython==0.29.36
           pip install buildozer==1.5.0
+          
       - name: Accept Android Licenses
         run: |
-          # Aceasta este partea critică care lipsea
-          mkdir -p ~/.android
-          touch ~/.android/repositories.cfg
-          yes | sdkmanager --sdk_root=$ANDROID_HOME --licenses || true
+          # Aceasta este cheia: creăm directorul de licențe și forțăm acceptarea
+          mkdir -p $HOME/.android
+          touch $HOME/.android/repositories.cfg
+          # Acceptăm licențele automat
+          yes | sdkmanager --licenses || true
+
       - name: Build
         run: buildozer android debug
+        
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
