@@ -15,6 +15,7 @@ from kivy.utils import get_color_from_hex
 from kivy.clock import Clock
 from kivy.core.text import LabelBase
 from date_scoli import DATE_LOGICE
+from plyer import tts
 
 # =========================================================
 # CONFIGURARE
@@ -23,8 +24,10 @@ Window.size = (450, 750)
 Window.clearcolor = get_color_from_hex('#F2E6F5')
 
 FONT_PATH = "arial.ttf"
+# Dacă nu găsește fontul în folderul aplicației, 
+# Kivy va folosi fontul implicit, deci nu mai încerca să cauți în C:\Windows
 if not os.path.exists(FONT_PATH):
-    FONT_PATH = "C:\\Windows\\Fonts\\arial.ttf"
+    FONT_PATH = "" 
 LabelBase.register(name='Arial', fn_regular=FONT_PATH)
 F = 'Arial'
 
@@ -34,25 +37,7 @@ def culoare(hex): return get_color_from_hex(hex)
 # TTS
 # =========================================================
 def vorbeste(text):
-    def _vorbeste():
-        try:
-            import pyttsx3
-            engine = pyttsx3.init()
-            engine.setProperty('rate', 140)
-            
-            # Căutăm dacă Windows-ul sau telefonul are o voce de română instalată
-            voices = engine.getProperty('voices')
-            for voice in voices:
-                if "RO" in voice.id.upper() or "ROM" in voice.lang.upper():
-                    engine.setProperty('voice', voice.id)
-                    break
-
-            engine.say(text)
-            engine.runAndWait()
-        except Exception as e:
-            print(f"Eroare sunet: {e}")
-
-    threading.Thread(target=_vorbeste, daemon=True).start()
+    tts.speak(text)
 
 # =========================================================
 # DATE
