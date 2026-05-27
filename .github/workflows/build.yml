@@ -16,14 +16,16 @@ jobs:
           pip install --upgrade pip
           pip install cython==0.29.36
           pip install buildozer==1.5.0
-          
-      - name: Accept Android Licenses
+
+      - name: Install Android SDK
         run: |
-          # Aceasta este cheia: creăm directorul de licențe și forțăm acceptarea
+          # Instalăm manual SDK-ul și acceptăm licențele
           mkdir -p $HOME/.android
           touch $HOME/.android/repositories.cfg
-          # Acceptăm licențele automat
+          # Acceptăm licențele în avans
           yes | sdkmanager --licenses || true
+          # Instalăm pachetele necesare explicit
+          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.1"
 
       - name: Build
         run: buildozer android debug
