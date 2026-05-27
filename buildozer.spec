@@ -15,7 +15,7 @@ android.permissions = INTERNET, MICROPHONE, READ_EXTERNAL_STORAGE, WRITE_EXTERNA
 # Setări pentru compatibilitate
 android.minapi = 21
 android.sdk = 33
-android.ndk = 25.2.9519653
+#android.ndk = 25.2.9519653
 android.archs = armeabi-v7a
 android.gradle_dependencies = androidx.appcompat:appcompat:1.4.1
 
