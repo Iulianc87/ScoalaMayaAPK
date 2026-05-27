@@ -7,6 +7,11 @@ jobs:
   build:
     runs-on: ubuntu-22.04
 
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      JAVA_HOME: /usr/lib/jvm/temurin-17-jdk-amd64
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -19,56 +24,34 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y \
-          zip unzip wget git \
-          openjdk-17-jdk \
-          python3-pip \
-          autoconf libtool pkg-config \
-          zlib1g-dev \
-          libncurses5-dev \
-          libncursesw5-dev \
-          cmake \
-          libffi-dev \
-          libssl-dev
 
-      - name: Install Python packages
-        run: |
+          sudo apt install -y \
+            zip unzip git wget \
+            openjdk-17-jdk \
+            python3-pip \
+            autoconf libtool pkg-config \
+            zlib1g-dev \
+            libncurses5-dev \
+            libncursesw5-dev \
+            cmake \
+            libffi-dev \
+            libssl-dev
+
           pip install --upgrade pip
           pip install cython==0.29.33
           pip install buildozer
 
-      - name: Setup Android SDK
+      - name: Accept Android licenses
         run: |
-          mkdir -p $HOME/android-sdk/cmdline-tools
-          cd $HOME/android-sdk/cmdline-tools
-
-          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-
-          unzip commandlinetools-linux-11076708_latest.zip
-
-          mv cmdline-tools latest
-
-          export ANDROID_HOME=$HOME/android-sdk
-          export ANDROID_SDK_ROOT=$HOME/android-sdk
-
-          export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
-
           export PATH=$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
 
-          java -version
+          yes | sdkmanager --licenses || true
 
-          yes | sdkmanager --licenses
-
-          sdkmanager "platform-tools"
-          sdkmanager "platforms;android-33"
-          sdkmanager "build-tools;34.0.0"
+          sdkmanager "platform-tools" || true
+          sdkmanager "platforms;android-33" || true
+          sdkmanager "build-tools;34.0.0" || true
 
       - name: Build APK
-        env:
-          ANDROID_HOME: /home/runner/android-sdk
-          ANDROID_SDK_ROOT: /home/runner/android-sdk
-          JAVA_HOME: /usr/lib/jvm/temurin-17-jdk-amd64
-
         run: |
           cd Proiect
 
@@ -87,9 +70,10 @@ jobs:
           echo "android.ndk = 25b" >> buildozer.spec
           echo "android.build_tools_version = 34.0.0" >> buildozer.spec
           echo "android.accept_sdk_license = True" >> buildozer.spec
+          echo "android.skip_update = True" >> buildozer.spec
           echo "android.archs = armeabi-v7a" >> buildozer.spec
 
-          buildozer -v android debug
+          buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
