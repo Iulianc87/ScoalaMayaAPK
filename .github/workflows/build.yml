@@ -27,14 +27,12 @@ jobs:
         run: |
           mkdir -p /home/runner/.buildozer/android/platform
           cd /home/runner/.buildozer/android/platform
-          # Descărcăm manual o versiune NDK stabilă cunoscută
           curl -LO https://dl.google.com/android/repository/android-ndk-r25b-linux.zip
-          unzip android-ndk-r25b-linux.zip
-          mv android-ndk-r25b android-ndk-r25b
+          unzip -q android-ndk-r25b-linux.zip
+          # NDK-ul este deja la calea corectă: /home/runner/.buildozer/android/platform/android-ndk-r25b
 
       - name: Build
         run: |
-          # Setăm variabila de mediu să folosească NDK-ul descărcat de noi
           export ANDROIDNDK=/home/runner/.buildozer/android/platform/android-ndk-r25b
           yes | buildozer android debug
         
