@@ -28,6 +28,8 @@ jobs:
 
       - name: Install dependencies
         run: |
+          sudo apt-get update -y
+
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
             git \
             zip \
@@ -76,22 +78,49 @@ jobs:
             "platforms;android-34" \
             "build-tools;34.0.0"
 
+      - name: Create buildozer.spec
+        run: |
+          cd Proiect
+
+          cat > buildozer.spec << 'EOF'
+[app]
+
+title = ScoalaMaya
+package.name = scoalamaya
+package.domain = org.scoala
+
+source.dir = .
+source.include_exts = py,png,jpg,kv,atlas,ttf
+
+version = 1.0
+
+requirements = python3,kivy==2.2.1
+
+orientation = portrait
+
+fullscreen = 0
+
+[buildozer]
+
+log_level = 2
+
+warn_on_root = 1
+
+[app:android]
+
+android.api = 34
+android.minapi = 24
+android.ndk = 25b
+android.accept_sdk_license = True
+android.skip_update = True
+android.sdk_path = /home/runner/android-sdk
+EOF
+
       - name: Build APK
         run: |
           export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
 
           cd Proiect
-
-          buildozer init || true
-
-          sed -i 's/# android.api = 31/android.api = 34/' buildozer.spec
-          sed -i 's/# android.minapi = 21/android.minapi = 24/' buildozer.spec
-          sed -i 's/# android.accept_sdk_license = False/android.accept_sdk_license = True/' buildozer.spec
-
-          echo "android.sdk = 34" >> buildozer.spec
-          echo "android.sdk_path = /home/runner/android-sdk" >> buildozer.spec
-          echo "android.skip_update = True" >> buildozer.spec
-          echo "android.ndk = 25b" >> buildozer.spec
 
           buildozer android debug
 
