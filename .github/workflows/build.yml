@@ -16,27 +16,36 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install Buildozer
+      - name: Install dependencies
         run: |
           sudo apt update
           sudo apt install -y zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev cmake libffi-dev libssl-dev
           pip install --upgrade pip
           pip install buildozer cython
 
+      - name: Accept Android licenses
+        run: |
+          yes | sdkmanager --licenses || true
+
       - name: Build APK
         run: |
           cd Proiect
           buildozer init
+
           sed -i 's/# log_level = 2/log_level = 2/' buildozer.spec
           sed -i 's/title = My Application/title = ScoalaMaya/' buildozer.spec
           sed -i 's/package.name = myapp/package.name = scoalamaya/' buildozer.spec
           sed -i 's/package.domain = org.test/package.domain = org.scoala/' buildozer.spec
           sed -i 's/source.include_exts = py,png,jpg,kv,atlas/source.include_exts = py,png,jpg,kv,atlas,ttf/' buildozer.spec
           sed -i 's/requirements = python3,kivy/requirements = python3,kivy/' buildozer.spec
-          echo "p4a.branch = master" >> buildozer.spec
-          echo "android.archs = armeabi-v7a" >> buildozer.spec
+
           echo "android.accept_sdk_license = True" >> buildozer.spec
-          buildozer -v android debug
+          echo "android.archs = armeabi-v7a" >> buildozer.spec
+          echo "android.api = 33" >> buildozer.spec
+          echo "android.minapi = 24" >> buildozer.spec
+          echo "android.build_tools_version = 34.0.0" >> buildozer.spec
+
+          buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
