@@ -8,8 +8,9 @@ jobs:
     runs-on: ubuntu-22.04
 
     env:
-      ANDROID_HOME: /home/runner/android-sdk
-      ANDROID_SDK_ROOT: /home/runner/android-sdk
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/25.2.9519653
 
     steps:
       - name: Checkout
@@ -28,99 +29,55 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get update -y
+          sudo apt update
 
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-            git \
-            zip \
-            unzip \
-            openjdk-17-jdk \
-            python3-pip \
-            autoconf \
-            libtool \
-            pkg-config \
-            zlib1g-dev \
-            libncurses5-dev \
-            libncursesw5-dev \
-            cmake \
-            libffi-dev \
-            libssl-dev \
-            wget \
-            tar
+          sudo apt install -y \
+            git zip unzip autoconf libtool pkg-config \
+            zlib1g-dev libncurses5-dev libncursesw5-dev \
+            cmake libffi-dev libssl-dev wget tar \
+            build-essential ccache
 
-          python -m pip install --upgrade pip
-
+          pip install --upgrade pip
           pip install cython==0.29.36
           pip install buildozer==1.5.0
-          pip install virtualenv
+          pip install python-for-android==2024.01.21
 
-      - name: Install Android SDK
+      - name: Install Android SDK packages
         run: |
-          mkdir -p $ANDROID_HOME/cmdline-tools
-          cd $ANDROID_HOME
-
-          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O sdk.zip
-
-          unzip -o sdk.zip
-
-          mkdir temp
-          mv cmdline-tools/* temp/
-
-          mkdir -p cmdline-tools/latest
-          mv temp/* cmdline-tools/latest/
-
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
-
           yes | sdkmanager --licenses
 
           sdkmanager \
             "platform-tools" \
             "platforms;android-34" \
-            "build-tools;34.0.0"
+            "build-tools;34.0.0" \
+            "ndk;25.2.9519653"
 
-      - name: Create buildozer.spec
-        run: |
-          cd Proiect
-
-          cat > buildozer.spec << 'EOF'
-[app]
-
-title = ScoalaMaya
-package.name = scoalamaya
-package.domain = org.scoala
-
-source.dir = .
-source.include_exts = py,png,jpg,kv,atlas,ttf
-
-version = 1.0
-
-requirements = python3,kivy==2.2.1
-
-orientation = portrait
-
-fullscreen = 0
-
-[buildozer]
-
-log_level = 2
-
-warn_on_root = 1
-
-[app:android]
-
-android.api = 34
-android.minapi = 24
-android.ndk = 25b
-android.accept_sdk_license = True
-android.skip_update = True
-android.sdk_path = /home/runner/android-sdk
-EOF
+          ls /usr/local/lib/android/sdk/build-tools
+          ls /usr/local/lib/android/sdk/build-tools/34.0.0
 
       - name: Build APK
         run: |
-          export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
-
           cd Proiect
+
+          buildozer init
+
+          sed -i 's/title = My Application/title = ScoalaMaya/' buildozer.spec
+          sed -i 's/package.name = myapp/package.name = scoalamaya/' buildozer.spec
+          sed -i 's/package.domain = org.test/package.domain = org.scoala/' buildozer.spec
+
+          sed -i 's/source.include_exts = py,png,jpg,kv,atlas/source.include_exts = py,png,jpg,kv,atlas,ttf/' buildozer.spec
+
+          sed -i 's/requirements = python3,kivy/requirements = python3==3.11.6,kivy==2.2.1/' buildozer.spec
+
+          echo "android.api = 34" >> buildozer.spec
+          echo "android.minapi = 24" >> buildozer.spec
+          echo "android.sdk = 34" >> buildozer.spec
+          echo "android.ndk = 25b" >> buildozer.spec
+          echo "android.accept_sdk_license = True" >> buildozer.spec
+          echo "p4a.branch = master" >> buildozer.spec
+
+          echo "android.sdk_path = /usr/local/lib/android/sdk" >> buildozer.spec
+          echo "android.ndk_path = /usr/local/lib/android/sdk/ndk/25.2.9519653" >> buildozer.spec
 
           buildozer android debug
 
