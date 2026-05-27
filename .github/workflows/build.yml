@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout
@@ -16,20 +16,25 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
           sudo apt update
-          sudo apt install -y zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev cmake libffi-dev libssl-dev
-          pip install --upgrade pip
-          pip install buildozer cython
+          sudo apt install -y \
+          zip unzip openjdk-17-jdk python3-pip \
+          autoconf libtool pkg-config zlib1g-dev \
+          libncurses5-dev libncursesw5-dev cmake \
+          libffi-dev libssl-dev git wget
 
-      - name: Accept Android licenses
+      - name: Install Buildozer
         run: |
-          yes | sdkmanager --licenses || true
+          pip install --upgrade pip
+          pip install cython==0.29.33
+          pip install buildozer
 
       - name: Build APK
         run: |
           cd Proiect
+
           buildozer init
 
           sed -i 's/# log_level = 2/log_level = 2/' buildozer.spec
@@ -37,13 +42,15 @@ jobs:
           sed -i 's/package.name = myapp/package.name = scoalamaya/' buildozer.spec
           sed -i 's/package.domain = org.test/package.domain = org.scoala/' buildozer.spec
           sed -i 's/source.include_exts = py,png,jpg,kv,atlas/source.include_exts = py,png,jpg,kv,atlas,ttf/' buildozer.spec
-          sed -i 's/requirements = python3,kivy/requirements = python3,kivy/' buildozer.spec
+          sed -i 's/requirements = python3,kivy/requirements = python3,kivy==2.2.1/' buildozer.spec
 
-          echo "android.accept_sdk_license = True" >> buildozer.spec
-          echo "android.archs = armeabi-v7a" >> buildozer.spec
           echo "android.api = 33" >> buildozer.spec
           echo "android.minapi = 24" >> buildozer.spec
+          echo "android.sdk = 33" >> buildozer.spec
+          echo "android.ndk = 25b" >> buildozer.spec
           echo "android.build_tools_version = 34.0.0" >> buildozer.spec
+          echo "android.accept_sdk_license = True" >> buildozer.spec
+          echo "android.archs = armeabi-v7a" >> buildozer.spec
 
           buildozer android debug
 
