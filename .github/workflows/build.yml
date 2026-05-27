@@ -43,10 +43,10 @@ jobs:
           pip install cython==0.29.33
           pip install buildozer
 
-      - name: Install Android SDK Command Line Tools
+      - name: Install Android SDK
         run: |
-          mkdir -p /usr/local/lib/android/sdk/cmdline-tools
-          cd /usr/local/lib/android/sdk/cmdline-tools
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          cd $HOME/android-sdk/cmdline-tools
 
           wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
 
@@ -54,15 +54,11 @@ jobs:
 
           mv cmdline-tools latest || true
 
-      - name: Install Android Build Tools
-        run: |
           export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
-          export ANDROID_HOME=/usr/local/lib/android/sdk
-          export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
+          export ANDROID_HOME=$HOME/android-sdk
+          export ANDROID_SDK_ROOT=$HOME/android-sdk
 
           export PATH=$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
-
-          java -version
 
           yes | sdkmanager --licenses
 
@@ -70,13 +66,19 @@ jobs:
           sdkmanager "platforms;android-33"
           sdkmanager "build-tools;34.0.0"
 
-          ls /usr/local/lib/android/sdk/build-tools
+      - name: Copy Build Tools To Buildozer
+        run: |
+          mkdir -p /home/runner/.buildozer/android/platform/android-sdk
+
+          cp -r $HOME/android-sdk/build-tools /home/runner/.buildozer/android/platform/android-sdk/
+
+          cp -r $HOME/android-sdk/platform-tools /home/runner/.buildozer/android/platform/android-sdk/
+
+          ls /home/runner/.buildozer/android/platform/android-sdk/build-tools
 
       - name: Build APK
         env:
           JAVA_HOME: /usr/lib/jvm/temurin-17-jdk-amd64
-          ANDROID_HOME: /usr/local/lib/android/sdk
-          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
 
         run: |
           cd Proiect
