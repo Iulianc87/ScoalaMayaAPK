@@ -6,6 +6,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # Această variabilă indică Buildozer-ului să accepte automat licențele
+      BUILDER_ALLOW_SDK_ACCEPT: 1
     steps:
       - uses: actions/checkout@v4
       
@@ -20,9 +23,8 @@ jobs:
 
       - name: Build
         run: |
-          # Aceasta este singura comandă necesară. 
-          # Buildozer va descărca automat tot ce îi lipsește (SDK, NDK).
-          buildozer android debug
+          # Configurăm Buildozer să accepte licențele
+          echo "y" | buildozer android debug
         
       - name: Upload
         uses: actions/upload-artifact@v4
