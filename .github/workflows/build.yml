@@ -16,15 +16,14 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
           sudo apt update
 
           sudo apt install -y \
+            git \
             zip \
             unzip \
-            git \
-            wget \
             openjdk-17-jdk \
             python3-pip \
             autoconf \
@@ -39,50 +38,37 @@ jobs:
 
       - name: Install Python packages
         run: |
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
+
           pip install cython==0.29.33
-          pip install buildozer
-
-      - name: Setup Android SDK
-        run: |
-          mkdir -p /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools
-
-          cd /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools
-
-          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-
-          unzip -o commandlinetools-linux-11076708_latest.zip
-
-          mv cmdline-tools latest || true
-
-          mkdir -p /home/runner/.buildozer/android/platform/android-sdk/tools/bin
-
-          ln -s /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager \
-          /home/runner/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
-
-          export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
-
-          export ANDROID_HOME=/home/runner/.buildozer/android/platform/android-sdk
-          export ANDROID_SDK_ROOT=/home/runner/.buildozer/android/platform/android-sdk
-
-          export PATH=$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
-
-          yes | sdkmanager --licenses
-
-          sdkmanager "platform-tools"
-          sdkmanager "platforms;android-33"
-          sdkmanager "build-tools;34.0.0"
+          pip install buildozer==1.5.0
+          pip install python-for-android==2024.01.21
 
       - name: Build APK
-        env:
-          JAVA_HOME: /usr/lib/jvm/temurin-17-jdk-amd64
-          ANDROID_HOME: /home/runner/.buildozer/android/platform/android-sdk
-          ANDROID_SDK_ROOT: /home/runner/.buildozer/android/platform/android-sdk
-
         run: |
           cd Proiect
 
           rm -rf .buildozer
+          rm -f buildozer.spec
+
+          buildozer init
+
+          sed -i 's#title = My Application#title = ScoalaMaya#' buildozer.spec
+          sed -i 's#package.name = myapp#package.name = scoalamaya#' buildozer.spec
+          sed -i 's#package.domain = org.test#package.domain = org.scoala#' buildozer.spec
+
+          sed -i 's#source.include_exts = py,png,jpg,kv,atlas#source.include_exts = py,png,jpg,kv,atlas,ttf,json#' buildozer.spec
+
+          sed -i 's#requirements = python3,kivy#requirements = python3,kivy==2.2.1#' buildozer.spec
+
+          echo "" >> buildozer.spec
+          echo "android.api = 33" >> buildozer.spec
+          echo "android.minapi = 24" >> buildozer.spec
+          echo "android.accept_sdk_license = True" >> buildozer.spec
+          echo "android.archs = armeabi-v7a" >> buildozer.spec
+          echo "log_level = 2" >> buildozer.spec
+
+          export P4A_BRANCH=2024.01.21
 
           buildozer android debug
 
