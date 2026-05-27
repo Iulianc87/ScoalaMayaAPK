@@ -16,22 +16,37 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install system dependencies
+      - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y \
-          zip unzip openjdk-17-jdk python3-pip \
-          autoconf libtool pkg-config zlib1g-dev \
-          libncurses5-dev libncursesw5-dev cmake \
-          libffi-dev libssl-dev git wget
-
-      - name: Install Buildozer
-        run: |
+          sudo apt install -y zip unzip openjdk-17-jdk python3-pip wget git
           pip install --upgrade pip
-          pip install cython==0.29.33
-          pip install buildozer
+          pip install cython==0.29.33 buildozer
+
+      - name: Setup Android SDK
+        run: |
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          cd $HOME/android-sdk/cmdline-tools
+
+          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip commandlinetools-linux-11076708_latest.zip
+
+          mv cmdline-tools latest
+
+          export ANDROID_HOME=$HOME/android-sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
+
+          yes | sdkmanager --licenses
+
+          sdkmanager "platform-tools"
+          sdkmanager "platforms;android-33"
+          sdkmanager "build-tools;34.0.0"
 
       - name: Build APK
+        env:
+          ANDROID_HOME: /home/runner/android-sdk
+          ANDROID_SDK_ROOT: /home/runner/android-sdk
+
         run: |
           cd Proiect
 
@@ -47,10 +62,9 @@ jobs:
           echo "android.api = 33" >> buildozer.spec
           echo "android.minapi = 24" >> buildozer.spec
           echo "android.sdk = 33" >> buildozer.spec
-          echo "android.ndk = 25b" >> buildozer.spec
           echo "android.build_tools_version = 34.0.0" >> buildozer.spec
-          echo "android.accept_sdk_license = True" >> buildozer.spec
           echo "android.archs = armeabi-v7a" >> buildozer.spec
+          echo "android.accept_sdk_license = True" >> buildozer.spec
 
           buildozer android debug
 
