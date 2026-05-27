@@ -43,10 +43,11 @@ jobs:
           pip install cython==0.29.33
           pip install buildozer
 
-      - name: Install Android SDK
+      - name: Setup Android SDK For Buildozer
         run: |
-          mkdir -p $HOME/android-sdk/cmdline-tools
-          cd $HOME/android-sdk/cmdline-tools
+          mkdir -p /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools
+
+          cd /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools
 
           wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
 
@@ -54,9 +55,15 @@ jobs:
 
           mv cmdline-tools latest || true
 
+          mkdir -p /home/runner/.buildozer/android/platform/android-sdk/tools/bin
+
+          ln -s /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager \
+          /home/runner/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
+
           export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
-          export ANDROID_HOME=$HOME/android-sdk
-          export ANDROID_SDK_ROOT=$HOME/android-sdk
+
+          export ANDROID_HOME=/home/runner/.buildozer/android/platform/android-sdk
+          export ANDROID_SDK_ROOT=/home/runner/.buildozer/android/platform/android-sdk
 
           export PATH=$JAVA_HOME/bin:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
 
@@ -66,23 +73,16 @@ jobs:
           sdkmanager "platforms;android-33"
           sdkmanager "build-tools;34.0.0"
 
-      - name: Copy Build Tools To Buildozer
-        run: |
-          mkdir -p /home/runner/.buildozer/android/platform/android-sdk
-
-          cp -r $HOME/android-sdk/build-tools /home/runner/.buildozer/android/platform/android-sdk/
-
-          cp -r $HOME/android-sdk/platform-tools /home/runner/.buildozer/android/platform/android-sdk/
-
           ls /home/runner/.buildozer/android/platform/android-sdk/build-tools
 
       - name: Build APK
         env:
           JAVA_HOME: /usr/lib/jvm/temurin-17-jdk-amd64
+          ANDROID_HOME: /home/runner/.buildozer/android/platform/android-sdk
+          ANDROID_SDK_ROOT: /home/runner/.buildozer/android/platform/android-sdk
 
         run: |
           cd Proiect
-
           buildozer android debug
 
       - name: Upload APK
