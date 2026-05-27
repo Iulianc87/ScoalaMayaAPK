@@ -27,6 +27,7 @@ jobs:
         run: |
           cd Proiect
           buildozer init
+          sed -i 's/# log_level = 2/log_level = 2/' buildozer.spec
           sed -i 's/title = My Application/title = ScoalaMaya/' buildozer.spec
           sed -i 's/package.name = myapp/package.name = scoalamaya/' buildozer.spec
           sed -i 's/package.domain = org.test/package.domain = org.scoala/' buildozer.spec
