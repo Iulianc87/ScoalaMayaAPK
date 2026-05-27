@@ -16,25 +16,12 @@ jobs:
           pip install --upgrade pip
           pip install cython==0.29.36
           pip install buildozer==1.5.0
-
-      - name: Install Android SDK
-        run: |
-          # Setăm calea către SDK-ul instalat de buildozer
-          export ANDROID_HOME=$HOME/.android/sdk
-          export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
-          
-          mkdir -p $HOME/.android
-          touch $HOME/.android/repositories.cfg
-          
-          # Acceptăm licențele
-          yes | sdkmanager --licenses || true
-          
-          # Instalăm pachetele necesare
-          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.1"
+          pip install setuptools
 
       - name: Build
         run: |
-          export ANDROID_HOME=$HOME/.android/sdk
+          # Aceasta este singura comandă necesară. 
+          # Buildozer va descărca automat tot ce îi lipsește (SDK, NDK).
           buildozer android debug
         
       - name: Upload
