@@ -43,7 +43,7 @@ jobs:
           pip install cython==0.29.33
           pip install buildozer
 
-      - name: Setup Android SDK For Buildozer
+      - name: Setup Android SDK
         run: |
           mkdir -p /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools
 
@@ -73,8 +73,6 @@ jobs:
           sdkmanager "platforms;android-33"
           sdkmanager "build-tools;34.0.0"
 
-          ls /home/runner/.buildozer/android/platform/android-sdk/build-tools
-
       - name: Build APK
         env:
           JAVA_HOME: /usr/lib/jvm/temurin-17-jdk-amd64
@@ -83,6 +81,9 @@ jobs:
 
         run: |
           cd Proiect
+
+          rm -rf .buildozer
+
           buildozer android debug
 
       - name: Upload APK
