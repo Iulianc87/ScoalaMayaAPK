@@ -6,6 +6,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ANDROID_HOME: /home/runner/.buildozer/android/platform/android-sdk
+      ANDROID_NDK_HOME: /home/runner/.buildozer/android/platform/android-ndk-r25b
     steps:
       - uses: actions/checkout@v4
       
@@ -23,17 +26,15 @@ jobs:
           pip install buildozer==1.5.0
           pip install --upgrade https://github.com/kivy/python-for-android/archive/master.zip
 
-      - name: Pre-download NDK
+      - name: Prepare Android Platform
         run: |
           mkdir -p /home/runner/.buildozer/android/platform
           cd /home/runner/.buildozer/android/platform
           curl -LO https://dl.google.com/android/repository/android-ndk-r25b-linux.zip
           unzip -q android-ndk-r25b-linux.zip
-          # NDK-ul este deja la calea corectă: /home/runner/.buildozer/android/platform/android-ndk-r25b
 
       - name: Build
         run: |
-          export ANDROIDNDK=/home/runner/.buildozer/android/platform/android-ndk-r25b
           yes | buildozer android debug
         
       - name: Upload
